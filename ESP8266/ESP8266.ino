@@ -12,13 +12,11 @@ WiFiClient  client;
 ThingSpeakClass ts;
 
 void setup() {
-  Serial.begin(115200);  // Initialize serial
+  Serial.begin(9600);  // Initialize serial
 
   WiFi.mode(WIFI_STA); 
   ts.begin(client);  // Initialize ThingSpeak
 
-  Serial.println(F("BME280 test"));
- 
 }
 
 void loop() {
@@ -30,18 +28,28 @@ void loop() {
     while(WiFi.status() != WL_CONNECTED){
       WiFi.begin(ssid, pass);  // Connect to WPA/WPA2 network. Change this line if using open or WEP network
       Serial.print(".");
-      delay(5000);     
+      delay(5000);
     } 
     Serial.println("\nConnected.");
   }
 
+  int incomingByte = 0; // incoming byte from serial input
+  char c;
+  String output = "";
+  while (Serial.available() > 0) {
+    // read the incoming byte:
+    incomingByte = Serial.read();
 
-  // hardcoded input for testing
-  int input = 37;
+    c = (char) incomingByte;
+    output += c;
+  }
+
+  Serial.print("DATA SENT TO THINGSPEAK: ");
+  Serial.println(output);
   
   // Write to ThingSpeak.
 
-  int x = ts.setField(1, input);
+  int x = ts.setField(1, output);
   if(x == 200){ // error code
     Serial.println("Channel update successful.");
   }
@@ -58,5 +66,5 @@ void loop() {
   }
 
   //ESP.deepSleep(20e6);
-  delay(15000); // Wait 20 seconds to update the channel again
+  delay(15000); // Wait 10 seconds to update the channel again
 }
