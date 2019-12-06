@@ -1,14 +1,21 @@
 #include "ThingSpeak.h"
 #include "secrets.h"
-//#include "ESP8266WiFi.h"
+#include "ESP8266WiFi.h"
 #include <Wire.h>
 #include <SPI.h>
+
+char ssid[] = SECRET_SSID;   // your network SSID (name) 
+char pass[] = SECRET_PASS;   // your network password
+unsigned long myChannelNumber = SECRET_CH_ID;
+const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
+WiFiClient  client;
+ThingSpeakClass ts;
 
 void setup() {
   Serial.begin(115200);  // Initialize serial
 
   WiFi.mode(WIFI_STA); 
-  ThingSpeak.begin(client);  // Initialize ThingSpeak
+  ts.begin(client);  // Initialize ThingSpeak
 
   Serial.println(F("BME280 test"));
  
@@ -34,7 +41,7 @@ void loop() {
   
   // Write to ThingSpeak.
 
-  int x = ThingSpeak.setField(1, input);
+  int x = ts.setField(1, input);
   if(x == 200){ // error code
     Serial.println("Channel update successful.");
   }
@@ -42,7 +49,7 @@ void loop() {
     Serial.println("Problem setting Field 1. HTTP error code " + String(x));
   }
 
-  x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+  x = ts.writeFields(myChannelNumber, myWriteAPIKey);
   if(x == 200){
     Serial.println("Channel update successful.");
   }
