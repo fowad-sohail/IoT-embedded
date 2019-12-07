@@ -7,19 +7,24 @@ void delay_ms(unsigned int ms);
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;
-    P4SEL |= BIT4 + BIT5;
-    UCA1CTL1 |= UCSWRST;
-    UCA1BR0 = 104;
-    UCA1BR1 = 0;
-    UCA1CTL1 |= UCSSEL_2;
-    UCA1MCTL |= UCBRS_1;
-    UCA1CTL1 &= ~UCSWRST;
+    P3SEL |= BIT3 + BIT4; //4 = RX
+    UCA0CTL1 |= UCSWRST;
+    UCA0BR0 = 104;
+    UCA0BR1 = 0;
+    UCA0CTL1 |= UCSSEL_2;
+    UCA0MCTL |= UCBRS_1;
+    UCA0CTL1 &= ~UCSWRST;
+
+    P2DIR |= BIT5;
 
     char name[4] = "1234";
     while(1)
     {
         serialString(name, 4);
-        delay_ms(1000);
+        P2OUT |= BIT5;
+        delay_ms(7000);
+        P2OUT &= ~BIT5;
+        delay_ms(7000);
     }
     __bis_SR_register(LPM0_bits + GIE);
 
@@ -28,8 +33,8 @@ int main(void)
 //Displays letter on term
 void serialPrint(char c)
 {
-    while(!(UCA1IFG & UCTXIFG));
-    UCA1TXBUF = c;
+    while(!(UCA0IFG & UCTXIFG));
+    UCA0TXBUF = c;
     delay_ms(50);
 }
 
