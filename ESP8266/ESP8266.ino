@@ -40,6 +40,7 @@ void loop() {
     // read the incoming byte:
     incomingByte = Serial.read();
 
+    // type cast to a character from the ASCII byte received from Serial
     c = (char) incomingByte;
     output += c;
   }
