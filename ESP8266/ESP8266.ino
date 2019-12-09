@@ -42,7 +42,13 @@ void loop() {
 
     // type cast to a character from the ASCII byte received from Serial
     c = (char) incomingByte;
-    output += c;
+    output += c; // concatenate each character before sending to ThingSpeak
+
+    /**
+     * THIS IS WHERE WE'LL CHECK FOR EACH CHARACTER THAT WILL DETERMINE IF THE DATA IS TEMPERATURE, HUMIDITY OR PRESSURE
+     * MAKE 3 VARIABLES FOR TEMP, HUM, PRESS AND BE SURE TO CONCATENATE THEM 
+     * SEND THOSE VARIABLES TO THINGSPEAK BELOW
+     */
   }
 
   Serial.print("DATA SENT TO THINGSPEAK: ");
@@ -57,6 +63,8 @@ void loop() {
   else{
     Serial.println("Problem setting Field 1. HTTP error code " + String(x));
   }
+
+  
 
   x = ts.writeFields(myChannelNumber, myWriteAPIKey);
   if(x == 200){
