@@ -91,7 +91,7 @@ void main(void) {
 
          char temp[3];
          char humid[3];
-         char press[3];
+         char press[4];
 
          itoa(fixedTemp, temp, 10);
          serialString(temp, 3);
@@ -100,7 +100,7 @@ void main(void) {
          serialString(humid, 3);
 
          itoa(fixedPress, press, 10);
-         serialString(press, 3);
+         serialString(press, 4);
 
          //Send data to serial port for display
          //sprintf(str,"%s %lu.%.2lu%s %lu.%.2lu%s %lu.%.2lu%s", "Temperature:", CorT/100, CorT%100,"C Rel Humidity:",CorH/1000, CorH%100,"% Pressure:",CorP/100, CorP%100," hPa\r\n\n");
