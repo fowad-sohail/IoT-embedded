@@ -67,7 +67,7 @@ void loop() {
     // we need to split up output to get the three numbers: temperature, humidity, pressure
   }
 
-  output = "123;456;789";
+  //output = "123;456;789";
   Serial.println("ENTIRE STRING FROM SERIAL INPUT: ");
   Serial.println(output);
 
