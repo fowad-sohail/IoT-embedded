@@ -4,26 +4,7 @@
 #include "BME280.h"
 #include <string.h>
 
-/*
- Read and display temperature, relative humidity, and pressure with BME280 sensor on F5529 Launchpad.
- Sensor polled in forced mode using the SPI interface. Internal trimming parameters must be
- read from device to perform conversion of raw data.  Data displayed on terminal program.
- Set serial port for 9600 baud, 8-bits, 1 stop, no parity, no flow control. UART interface is
- on TXD (P3.3) and RXD (P3.4); UART polling with no RX interrupt. Green LED on P4.7
- illuminates during data transmission. SPI lines are on P3.0 (MOSI), P3.1 (MISO), P3.2 (CLK),
- and P1.5 (CS) of UCB0 module. SPI clock 1 MHz.The CS line must be configured consistently in
- the BME280.h file. Main loop runs with timed interrupt from LPM3 and VLO clock. IDE with
- CCS 6.1.3 and nofloat printf support. Launchpad pins:
-
-    P3.0  MOSI  SPI
-    P3.1  MISO  SPI
-    P3.2  CLK  SPI
-    P3.3  TXD  UART
-    P3.4  RXD  UART
-    P1.5  CS  SPI
- */
-
-# define PERIOD 10000 //Samping period. 10000 count is approximately 1 second; maximum is 65535
+#define PERIOD 10000 //Samping period. 10000 count is approximately 1 second; maximum is 65535
 
 void SetTimer(void);
 void SetVLO(void);
@@ -35,21 +16,21 @@ void serialString(char *c, int size);
 void delay_ms(unsigned int ms);
 char* itoa(int value, char* result, int base);
 
-//Variables for UART terminal display
 char str[80];
 volatile uint8_t i,count;
 volatile int32_t CorT;
 volatile uint32_t CorH, CorP;
 
+
 void init_UART()
 {
-    P4SEL |= BIT4 + BIT5;
-    UCA1CTL1 |= UCSWRST;
-    UCA1BR0 = 104;
-    UCA1BR1 = 0;
-    UCA1CTL1 |= UCSSEL_2;
-    UCA1MCTL |= UCBRS_1;
-    UCA1CTL1 &= ~UCSWRST;
+    P3SEL |= BIT3 + BIT4; //4 = RX
+    UCA0CTL1 |= UCSWRST;
+    UCA0BR0 = 104;
+    UCA0BR1 = 0;
+    UCA0CTL1 |= UCSSEL_2;
+    UCA0MCTL |= UCBRS_1;
+    UCA0CTL1 &= ~UCSWRST;
 }
 
 void main(void) {
@@ -62,7 +43,7 @@ void main(void) {
     SetUART();
     SetSPI();
 
-    _BIS_SR(GIE); //Enable global interrupts.
+    _BIS_SR(GIE); //Enable global interrupts
 
     //Get the trimming parameters from sensor for raw data conversion
     GetCompData();
@@ -86,18 +67,19 @@ void main(void) {
          char humid[3];
          char press[4];
 
-         serialString("Temp:", 5);
          itoa(fixedTemp, temp, 10);
          serialString(temp, 3);
+         serialPrint(';');
 
-         serialString("Hum:", 4);
          itoa(fixedHumid, humid, 10);
          serialString(humid, 3);
+         serialPrint(';');
 
-         serialString("Pres:", 5);
          itoa(fixedPress, press, 10);
          serialString(press, 4);
-         delay_ms(10000);
+         serialPrint(';');
+
+         delay_ms(20000);
     }
 }
 
@@ -212,7 +194,6 @@ void main(void) {
          {
              serialPrint(*(c+i));
          }
-         serialPrint('\n');
  }
  void delay_ms(unsigned int ms)
  {
