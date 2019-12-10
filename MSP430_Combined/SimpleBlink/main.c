@@ -68,16 +68,18 @@ void main(void) {
          char press[4];
 
          itoa(fixedTemp, temp, 10);
-         serialPrint('T');
          serialString(temp, 3);
+         serialPrint(';');
 
          itoa(fixedHumid, humid, 10);
-         serialPrint('H');
          serialString(humid, 3);
+         serialPrint(';');
 
          itoa(fixedPress, press, 10);
-         serialPrint('P');
          serialString(press, 4);
+         serialPrint(';');
+
+         delay_ms(20000);
     }
 }
 
