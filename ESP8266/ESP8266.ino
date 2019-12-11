@@ -67,7 +67,6 @@ void loop() {
     // we need to split up output to get the three numbers: temperature, humidity, pressure
   }
 
-  //output = "123;456;789";
   Serial.println("ENTIRE STRING FROM SERIAL INPUT: ");
   Serial.println(output);
 
@@ -77,39 +76,40 @@ void loop() {
     String temp = getValue(output, ';', 0);
     String humid = getValue(output, ';', 1);
     String pressure = getValue(output, ';', 2);
-    int t = ts.setField(1, temp);
-    if (t == 200) { // error code
-      Serial.println("Channel update successful.");
-    }
-    else {
-      Serial.println("Problem setting Field 1. HTTP error code " + String(t));
-    }
-    
-    int h = ts.setField(2, humid);
-    if (h == 200) { // error code
-      Serial.println("Channel update successful.");
-    }
-    else {
-      Serial.println("Problem setting Field 1. HTTP error code " + String(h));
-    }
-    
-    int p = ts.setField(3, pressure);
-     if (p == 200) { // error code
-      Serial.println("Channel update successful.");
-    }
-    else {
-      Serial.println("Problem setting Field 1. HTTP error code " + String(p));
-    }
 
-    //For uploading to thinkspeak
-  int x = ts.writeFields(myChannelNumber, myWriteAPIKey);
-  if (x == 200) {
-    Serial.println("Channel update successful.");
-  }
-  else {
-    Serial.println("Problem updating channel. HTTP error code " + String(x));
-  }
+    if((temp == "-1")||(humid == "-1") || (pressure == "-1"))
+    {
+      int t = ts.setField(1, temp);
+      if (t == 200) { // error code
+        Serial.println("Channel update successful.");
+      }
+      else {
+        Serial.println("Problem setting Field 1. HTTP error code " + String(t));
+      }
+      
+      int h = ts.setField(2, humid);
+      if (h == 200) { // error code
+        Serial.println("Channel update successful.");
+      }
+      else {
+        Serial.println("Problem setting Field 1. HTTP error code " + String(h));
+      }
+      int p = ts.setField(3, pressure);
+       if (p == 200) { // error code
+        Serial.println("Channel update successful.");
+      }
+      else {
+        Serial.println("Problem setting Field 1. HTTP error code " + String(p));
+      }
 
-  //ESP.deepSleep(20e6);
+      //For uploading to thinkspeak
+      int x = ts.writeFields(myChannelNumber, myWriteAPIKey);
+      if (x == 200) {
+        Serial.println("Channel update successful.");
+      }
+      else {
+        Serial.println("Problem updating channel. HTTP error code " + String(x));
+      }
+    }
   delay(15000); // Wait 10 seconds to update the channel again
 }
