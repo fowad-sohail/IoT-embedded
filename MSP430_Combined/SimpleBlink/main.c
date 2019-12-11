@@ -38,24 +38,20 @@ void main(void) {
 
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
     init_UART();
-    //SetPins();
-    //SetVLO();
-    //SetTimer();
-    //SetSPI();
-    //_BIS_SR(GIE); //Enable global interrupts
+    SetPins();
+    SetVLO();
+    SetTimer();
+    SetSPI();
+    _BIS_SR(GIE); //Enable global interrupts
 
     //Get the trimming parameters from sensor for raw data conversion
-    //GetCompData();
+    GetCompData();
 
-    char name[13] = "123;456;7899;";
+    //char name[13] = "123;456;7899;";
     while(1)
     {
-        serialString(name, 13);
-        delay_ms(7000);
-    }
-         /*TA0CCR0 = PERIOD; // Polling period
+         TA0CCR0 = PERIOD; // Polling period
          LPM3;      //Wait in low power mode
-         P4OUT |= BIT7; //Timeout. Turn on green LED on Launchpad
          //Burst read on SPI to get 3 press data bytes, 3 temp bytes and 2 humidity bytes
          ReadTHsensor();
          //Apply cal factors to raw data
@@ -80,9 +76,10 @@ void main(void) {
 
          itoa(fixedPress, press, 10);
          serialString(press, 4);
+         serialPrint(';');
 
          delay_ms(20000);
-    }*/
+    }
 }
 
 #pragma vector=TIMER0_A0_VECTOR
@@ -93,41 +90,41 @@ void main(void) {
 
  void SetPins(void)
   {
-    /* Port 1
-    P1.0 Red LED
-    P1.5 TH Select.  Pull this CSB line low to enable BME280 communication
-    CS_TH must also be defined in BME280.h
-    */
-    P1DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
-    P1OUT &= ~BIT0; //LED off
+     /* Port 1
+     P1.0 Red LED
+     P1.5 TH Select.  Pull this CSB line low to enable BME280 communication
+     CS_TH must also be defined in BME280.h
+     */
+     P1DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
+     P1OUT &= ~BIT0; //LED off
 
-    /* Port 2
-    P2.1  Button on Launchpad
-    */
-    P2DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
+     /* Port 2
+     P2.1  Button on Launchpad
+     */
+     P2DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
 
-    /* Port 3 */
-    P3SEL = BIT0 + BIT1 + BIT2 + BIT3 + BIT4; //SPI + UART lines
-    P3DIR |= BIT5 + BIT6 + BIT7; //Unused lines
+     /* Port 3 */
+     P3SEL = BIT0 + BIT1 + BIT2 + BIT3 + BIT4; //SPI + UART lines
+     P3DIR |= BIT5 + BIT6 + BIT7; //Unused lines
 
-    /* Port 4
-    P4.0--4.6 unused
-    P4.7 Green LED
-    */
-    P4DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
-    P4OUT &= ~BIT7;
+     /* Port 4
+     P4.0--4.6 unused
+     P4.7 Green LED
+     */
+     P4DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
+     P4OUT &= ~BIT7;
 
-    /* Port 5
-    P5.0 Unused
-    P5.1 Unused
-    P5.2--P5.5 grounded or open as per spec sheet
-    */
-    P5DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
+     /* Port 5
+     P5.0 Unused
+     P5.1 Unused
+     P5.2--P5.5 grounded or open as per spec sheet
+     */
+     P5DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
 
-    /* Port 6
-    P6.0--6.7 unused
-    */
-    P6DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
+     /* Port 6
+     P6.0--6.7 unused
+     */
+     P6DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
   }
 
  void SetVLO(void)
