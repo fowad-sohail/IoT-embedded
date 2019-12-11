@@ -1,0 +1,7 @@
+Debug/
+Release/
+.config/
+.launches/
+
+.xdchelp
+/.metadata/

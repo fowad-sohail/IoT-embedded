@@ -24,33 +24,36 @@ volatile uint32_t CorH, CorP;
 
 void init_UART()
 {
-    P3SEL |= BIT3 + BIT4; //4 = RX
-    UCA0CTL1 |= UCSWRST;
-    UCA0BR0 = 104;
-    UCA0BR1 = 0;
-    UCA0CTL1 |= UCSSEL_2;
-    UCA0MCTL |= UCBRS_1;
-    UCA0CTL1 &= ~UCSWRST;
+     WDTCTL = WDTPW | WDTHOLD;
+     P3SEL |= BIT3 + BIT4; //4 = RX
+     UCA0CTL1 |= UCSWRST;
+     UCA0BR0 = 8;
+     UCA0BR1 = 0;
+     UCA0CTL1 |= UCSSEL_2;
+     UCA0MCTL |= UCBRS_6;
+     UCA0CTL1 &= ~UCSWRST;
 }
 
 void main(void) {
 
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
     init_UART();
-    SetPins();
-    SetVLO();
-    SetTimer();
-    SetUART();
-    SetSPI();
-
-    _BIS_SR(GIE); //Enable global interrupts
+    //SetPins();
+    //SetVLO();
+    //SetTimer();
+    //SetSPI();
+    //_BIS_SR(GIE); //Enable global interrupts
 
     //Get the trimming parameters from sensor for raw data conversion
-    GetCompData();
+    //GetCompData();
 
+    char name[13] = "123;456;7899;";
     while(1)
     {
-         TA0CCR0 = PERIOD; // Polling period
+        serialString(name, 13);
+        delay_ms(7000);
+    }
+         /*TA0CCR0 = PERIOD; // Polling period
          LPM3;      //Wait in low power mode
          P4OUT |= BIT7; //Timeout. Turn on green LED on Launchpad
          //Burst read on SPI to get 3 press data bytes, 3 temp bytes and 2 humidity bytes
@@ -77,10 +80,9 @@ void main(void) {
 
          itoa(fixedPress, press, 10);
          serialString(press, 4);
-         serialPrint(';');
 
          delay_ms(20000);
-    }
+    }*/
 }
 
 #pragma vector=TIMER0_A0_VECTOR
@@ -139,16 +141,6 @@ void main(void) {
     TA0CTL = TASSEL_1 | MC_1;  //Set Timer A to ACLK; MC_1 to count up to TA0CCR0.
      }
 
- void SetUART(void)
-  {
-     UCA0CTL1 |= UCSWRST;                      // Reset to configure
-     UCA0CTL1 |= UCSSEL_2;                     // SMCLK
-     UCA0BR0 = 6;                              // Prescalers for 9600 baud
-     UCA0BR1 = 0;
-     UCA0MCTL = UCBRS_0 + UCBRF_13 + UCOS16;   // Modln UCBRSx=0, UCBRFx=0,
-     UCA0CTL1 &= ~UCSWRST;                     // Initialize
-  }
-
  void SetSPI(void)
    {
      // Configure the USCI module: 3-pin SPI
@@ -184,7 +176,7 @@ void main(void) {
  void serialPrint(char c)
  {
      while(!(UCA1IFG & UCTXIFG));
-     UCA1TXBUF = c;
+     UCA0TXBUF = c;
      delay_ms(50);
  }
  void serialString(char *c, int size)
