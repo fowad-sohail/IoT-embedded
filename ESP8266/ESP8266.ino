@@ -3,12 +3,22 @@
 #include "ESP8266WiFi.h"
 #include <Wire.h>
 #include <SPI.h>
+
+//Pull the secrets from that other file
 char ssid[] = SECRET_SSID;   // your network SSID (name)
 char pass[] = SECRET_PASS;   // your network password
 unsigned long myChannelNumber = SECRET_CH_ID;
 const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
 WiFiClient  client;
 ThingSpeakClass ts;
+
+
+//This function takes an input of data in this format 123;456;7891 and then breaks it into sections 
+//based on where the seperator charecter is (in this case ';'). Index is which piece of the string to you 
+//want to return. 
+//for instance:             123            ;          456               ;            7891
+//for instance: [index = 0 to return this] ; [index = 1 to return this] ; [index = 2 to return this]
+//If it doesnt find any semicolins in your data, it returns a blank string
 String getValue(String data, char separator, int index)
 {
     int found = 0;
@@ -23,12 +33,16 @@ String getValue(String data, char separator, int index)
     }
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
+
+//Initilizes the UART to 115200, says Hello to the user, and does some wifi initilization
 void setup() {
   Serial.begin(115200);  // Initialize serial
-  Serial.println("Hello! :)");
+  Serial.println("Hello! :)"); //Gotta say hi
   WiFi.mode(WIFI_STA);
   ts.begin(client);  // Initialize ThingSpeak
 }
+
+//We stay in this loop indefinitely
 void loop() {
   // Connect or reconnect to WiFi
   if (WiFi.status() != WL_CONNECTED) {
@@ -44,6 +58,10 @@ void loop() {
   int incomingByte = 0; // incoming byte from serial input
   char c;
   String output = "";
+
+    //Arduino's Serial saves incoming data (From the MSP) in a buffer when you run
+  //Serial.avaliable you check to see if there is anything in that buffer
+  //once you read data from the buffer, the data you read is removed from the buffer
   while (Serial.available() > 0) 
   {
     // read the incoming byte:
@@ -60,11 +78,13 @@ void loop() {
   Serial.println("ENTIRE STRING FROM SERIAL INPUT: ");
   Serial.println(output);
   Serial.println("-----------------------");
-    
+  
+    //We just got sent data in the format [temperature] ; [humidity] ; [pressure]
+    //We need to parse that into three seperate values. That is what getValue does
     String temp = getValue(output, ';', 0);
     String humid = getValue(output, ';', 1);
     String pressure = getValue(output, ';', 2);
-    int t = ts.setField(1, temp);
+    int t = ts.setField(1, temp); //Upload field 1
     if (t == 200) { // error code
       Serial.println("Channel update successful.");
     }
@@ -72,7 +92,7 @@ void loop() {
       Serial.println("Problem setting Field 1. HTTP error code " + String(t));
     }
     
-    int h = ts.setField(2, humid);
+    int h = ts.setField(2, humid); //Upload field 2
     if (h == 200) { // error code
       Serial.println("Channel update successful.");
     }
@@ -80,7 +100,7 @@ void loop() {
       Serial.println("Problem setting Field 1. HTTP error code " + String(h));
     }
     
-    int p = ts.setField(3, pressure);
+    int p = ts.setField(3, pressure); //Upload field 3
      if (p == 200) { // error code
       Serial.println("Channel update successful.");
     }
