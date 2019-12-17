@@ -6,6 +6,7 @@
 
 #define PERIOD 10000 //Samping period. 10000 count is approximately 1 second; maximum is 65535
 
+//These are function prototypes. Its a thing in c/c++ that allows us to use a function above the code where we actually impliment it 
 void SetTimer(void);
 void SetVLO(void);
 void SetPins(void);
@@ -21,7 +22,9 @@ volatile uint8_t i,count;
 volatile int32_t CorT;
 volatile uint32_t CorH, CorP;
 
-
+//This initilizes UART comms 
+//With a baud rate of 115200
+//Other than that its the default settings
 void init_UART()
 {
      WDTCTL = WDTPW | WDTHOLD;
@@ -37,17 +40,16 @@ void init_UART()
 void main(void) {
 
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-    init_UART();
-    SetPins();
-    SetVLO();
-    SetTimer();
-    SetSPI();
+    init_UART(); //Do the UART initilization
+    SetPins(); //Set the pins for UART and SPI
+    SetVLO(); //Changes clock freqency for some reason?
+    SetTimer(); //Sets the low power mode timer 
+    SetSPI(); //Initilizes SPI
     _BIS_SR(GIE); //Enable global interrupts
 
     //Get the trimming parameters from sensor for raw data conversion
     GetCompData();
 
-    //char name[13] = "123;456;7899;";
     while(1)
     {
          TA0CCR0 = PERIOD; // Polling period
@@ -58,6 +60,9 @@ void main(void) {
          CorT = CalcTemp(); //Corrected temperature
          CorH = CalcHumid(); //Corrected humidity
          CorP = CalcPress(); //Corrected pressure
+		 
+		 //To advoid floats the decimal points are just returns with the numbers
+		 //We need to remove the decimal data
          unsigned int fixedTemp = CorT/100;
          unsigned int fixedHumid = CorH/1000;
          unsigned int fixedPress = CorP/100;
@@ -65,18 +70,20 @@ void main(void) {
          char temp[3];
          char humid[3];
          char press[4];
+		
+		//The data format to transmit is:
+		//[temp];[humidity];[pressure]
+         itoa(fixedTemp, temp, 10); //Convert to ASCII
+         serialString(temp, 3); //Transmit it
+         serialPrint(';'); //Add the semicolon at the end so the ESP knows that is the end of the value
 
-         itoa(fixedTemp, temp, 10);
-         serialString(temp, 3);
-         serialPrint(';');
+         itoa(fixedHumid, humid, 10); //Convert to ASCII
+         serialString(humid, 3); //Transmit it
+         serialPrint(';'); //Add the semicolon at the end so the ESP knows that is the end of the value
 
-         itoa(fixedHumid, humid, 10);
-         serialString(humid, 3);
-         serialPrint(';');
-
-         itoa(fixedPress, press, 10);
-         serialString(press, 4);
-         serialPrint(';');
+         itoa(fixedPress, press, 10); //Convert to ASCII
+         serialString(press, 4); //Transmit it
+         serialPrint(';'); //Add the semicolon at the end so the ESP knows that is the end of the value
 
          delay_ms(20000);
     }
@@ -127,6 +134,7 @@ void main(void) {
      P6DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4 + BIT5 + BIT6 + BIT7;
   }
 
+//Sets clock frequency
  void SetVLO(void)
     { //Default frequency ~ 10 kHz
     UCSCTL4 |= SELA_1;  //Set ACLK to VLO
@@ -138,6 +146,7 @@ void main(void) {
     TA0CTL = TASSEL_1 | MC_1;  //Set Timer A to ACLK; MC_1 to count up to TA0CCR0.
      }
 
+//Inilizes SPI communication
  void SetSPI(void)
    {
      // Configure the USCI module: 3-pin SPI
@@ -148,21 +157,23 @@ void main(void) {
      UCB0BR1 |= 0x00;
    }
 
-
+//Converts interager to its equivilent ASCII charecter
  char* itoa(int value, char* result, int base)
  {
          // check that the base if valid
          if (base < 2 || base > 36) { *result = '\0'; return result; }
          char* ptr = result, *ptr1 = result, tmp_char;
          int tmp_value;
+		 //While they are still numbers left in value
          do {
                  tmp_value = value;
                  value /= base;
-                 *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
-         } while ( value );
+                 *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)]; //Add 35 to the remander, select this value
+         } while ( value ); 
          // Apply negative sign
          if (tmp_value < 0) *ptr++ = '-';
          *ptr-- = '\0';
+		 //The result by default is backwards so this code rotates it
          while(ptr1 < ptr) {
                  tmp_char = *ptr;
                  *ptr--= *ptr1;
@@ -170,20 +181,26 @@ void main(void) {
          }
          return result;
  }
+ 
+ //Prints one charecter to UART
  void serialPrint(char c)
  {
-     while(!(UCA1IFG & UCTXIFG));
-     UCA0TXBUF = c;
-     delay_ms(50);
+     while(!(UCA1IFG & UCTXIFG)); //Wait for TX Buffer to be free
+     UCA0TXBUF = c; //Add it to the buffer
+     delay_ms(50); //This code is unneccesary but is here anyway because it makes me happy
  }
+ 
+ //Prints multiple chrecters to UART
  void serialString(char *c, int size)
  {
          int i;
-         for(i = 0; i<size; i++)
+         for(i = 0; i<size; i++) //For each charecter
          {
-             serialPrint(*(c+i));
+             serialPrint(*(c+i)); //Print that charecter
          }
  }
+ 
+ //Simple and easy delay function that works
  void delay_ms(unsigned int ms)
  {
      while (ms)
