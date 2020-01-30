@@ -1,2 +1,3 @@
 # IoT-embedded
-(Another) Intro to Embedded Final Project
+
+Intro to Embedded Final Project
